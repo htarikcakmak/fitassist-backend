@@ -1,4 +1,4 @@
-package com.fitassist.backend.config; // Lütfen kendi paket isminle değiştir
+package com.fitassist.backend.config;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;

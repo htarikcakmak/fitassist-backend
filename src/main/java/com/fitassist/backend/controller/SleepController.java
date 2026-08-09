@@ -14,55 +14,43 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sleep")
-@CrossOrigin(origins = "http://localhost:5173") // Vite portuna göre uyarlandı
+@CrossOrigin(origins = "http://localhost:5173") // Vite portuna göre güncellendi
 public class SleepController {
 
     @Autowired
     private SleepLogRepository sleepLogRepository;
 
-    // Çeviri mesajlarını okumamızı sağlayan araç
     @Autowired
     private MessageSource messageSource;
 
-    // React sayfası ilk açıldığında geçmiş verileri çekmek için çalışır
+    // GET İsteği: Geçmiş verileri çekmek için çalışır (Değişmedi)
     @GetMapping("/all")
     public List<SleepLog> getAllSleepLogs() {
         return sleepLogRepository.findAll();
     }
 
-    // React'teki formdan gelen yeni uyku verisini kaydetmek için çalışır
+    // POST İsteği: Yeni uyku verisini kaydeder
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> addSleepLog(@RequestBody SleepLog sleepLog) {
         
+        // try-catch kaldırıldı!
+        
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            // Veriyi veritabanına kaydet
-            SleepLog savedLog = sleepLogRepository.save(sleepLog);
+        // 1. Veriyi veritabanına kaydet
+        SleepLog savedLog = sleepLogRepository.save(sleepLog);
 
-            // Başarı mesajını o anki seçili dile göre çek
-            String successMessage = messageSource.getMessage(
-                    "sleep.save.success", 
-                    null, 
-                    LocaleContextHolder.getLocale()
-            );
+        // 2. Başarı mesajını o anki seçili dile göre çek (messages.properties dosyasından)
+        String successMessage = messageSource.getMessage(
+                "sleep.save.success", 
+                null, 
+                LocaleContextHolder.getLocale()
+        );
 
-            // Yanıt paketini oluştur
-            response.put("message", successMessage);
-            response.put("data", savedLog);
+        // 3. Yanıt paketini oluştur
+        response.put("message", successMessage);
+        response.put("data", savedLog);
 
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            // Hata mesajını o anki seçili dile göre çek
-            String errorMessage = messageSource.getMessage(
-                    "server.error", 
-                    null, 
-                    LocaleContextHolder.getLocale()
-            );
-            
-            response.put("message", errorMessage);
-            return ResponseEntity.internalServerError().body(response);
-        }
+        return ResponseEntity.ok(response);
     }
 }

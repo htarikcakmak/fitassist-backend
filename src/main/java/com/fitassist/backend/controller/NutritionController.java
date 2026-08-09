@@ -21,7 +21,6 @@ public class NutritionController {
     @Autowired
     private NutritionLogRepository nutritionLogRepository;
 
-    // Çeviri mesajlarını okumamızı sağlayan araç
     @Autowired
     private MessageSource messageSource;
 
@@ -37,42 +36,29 @@ public class NutritionController {
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> addNutritionLog(@RequestBody NutritionLog newLog) {
         
-        // React'e döneceğimiz JSON paketini hazırlıyoruz
+        // try-catch bloğu tamamen kaldırıldı!
+        
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            // Eğer React tarafından tarih gönderilmediyse, bugünün tarihini otomatik ekle
-            if (newLog.getDate() == null) {
-                newLog.setDate(LocalDate.now());
-            }
-            
-            // Gelen yeni besin verisini veritabanına kaydet
-            NutritionLog savedLog = nutritionLogRepository.save(newLog);
-
-            // Başarı mesajını o anki seçili dile göre çek
-            String successMessage = messageSource.getMessage(
-                    "nutrition.save.success", 
-                    null, 
-                    LocaleContextHolder.getLocale()
-            );
-
-            // Yanıt paketini oluştur
-            response.put("message", successMessage);
-            response.put("data", savedLog);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            // Hata mesajını o anki seçili dile göre çek
-            String errorMessage = messageSource.getMessage(
-                    "server.error", 
-                    null, 
-                    LocaleContextHolder.getLocale()
-            );
-            
-            // Hata paketini dön
-            response.put("message", errorMessage);
-            return ResponseEntity.internalServerError().body(response);
+        // 1. Eğer React tarafından tarih gönderilmediyse, bugünün tarihini otomatik ekle
+        if (newLog.getDate() == null) {
+            newLog.setDate(LocalDate.now());
         }
+        
+        // 2. Gelen yeni besin verisini veritabanına kaydet
+        NutritionLog savedLog = nutritionLogRepository.save(newLog);
+
+        // 3. Başarı mesajını o anki seçili dile göre çek
+        String successMessage = messageSource.getMessage(
+                "nutrition.save.success", 
+                null, 
+                LocaleContextHolder.getLocale()
+        );
+
+        // 4. Yanıt paketini oluştur ve React'e gönder
+        response.put("message", successMessage);
+        response.put("data", savedLog);
+
+        return ResponseEntity.ok(response);
     }
 }

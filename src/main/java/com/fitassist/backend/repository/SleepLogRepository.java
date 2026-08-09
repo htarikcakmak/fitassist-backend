@@ -1,4 +1,4 @@
-package com.fitassist.backend.repository; // Kendi paket ismini buraya yaz
+package com.fitassist.backend.repository;
 
 import com.fitassist.backend.model.SleepLog;
 import org.springframework.data.jpa.repository.JpaRepository;
