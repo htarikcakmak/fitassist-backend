@@ -21,7 +21,6 @@ public class ProgressController {
     @Autowired
     private ProgressLogRepository progressLogRepository;
 
-    // Çeviri mesajlarını okumamızı sağlayan araç
     @Autowired
     private MessageSource messageSource;
 
@@ -36,40 +35,29 @@ public class ProgressController {
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> addProgressLog(@RequestBody ProgressLog newLog) {
         
+        // try-catch bloğu tamamen kaldırıldı! Merkezi hata yönetimi devrede.
+        
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            // Eğer tarihsiz gönderildiyse bugünün tarihini ata
-            if (newLog.getDate() == null) {
-                newLog.setDate(LocalDate.now());
-            }
-            
-            // Veritabanına kaydet
-            ProgressLog savedLog = progressLogRepository.save(newLog);
-
-            // Başarı mesajını o anki seçili dile göre çek
-            String successMessage = messageSource.getMessage(
-                    "progress.save.success", 
-                    null, 
-                    LocaleContextHolder.getLocale()
-            );
-
-            // Yanıt paketini oluştur
-            response.put("message", successMessage);
-            response.put("data", savedLog);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            // Hata mesajını o anki seçili dile göre çek
-            String errorMessage = messageSource.getMessage(
-                    "server.error", 
-                    null, 
-                    LocaleContextHolder.getLocale()
-            );
-            
-            response.put("message", errorMessage);
-            return ResponseEntity.internalServerError().body(response);
+        // 1. İş Mantığı: Eğer tarihsiz gönderildiyse bugünün tarihini ata
+        if (newLog.getDate() == null) {
+            newLog.setDate(LocalDate.now());
         }
+        
+        // 2. Veritabanına kaydet
+        ProgressLog savedLog = progressLogRepository.save(newLog);
+
+        // 3. Başarı mesajını o anki seçili dile göre properties dosyasından çek
+        String successMessage = messageSource.getMessage(
+                "progress.save.success", 
+                null, 
+                LocaleContextHolder.getLocale()
+        );
+
+        // 4. Yanıt paketini oluştur ve React'e gönder
+        response.put("message", successMessage);
+        response.put("data", savedLog);
+
+        return ResponseEntity.ok(response);
     }
 }

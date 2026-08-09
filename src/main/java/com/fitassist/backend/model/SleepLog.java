@@ -1,4 +1,4 @@
-package com.fitassist.backend.model; // Kendi paket ismini buraya yaz
+package com.fitassist.backend.model; 
 
 import jakarta.persistence.*;
 
