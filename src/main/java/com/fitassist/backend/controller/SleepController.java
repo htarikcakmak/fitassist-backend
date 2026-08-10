@@ -1,10 +1,8 @@
 package com.fitassist.backend.controller;
 
-import com.fitassist.backend.model.SleepLog;
-import com.fitassist.backend.repository.SleepLogRepository;
+import com.fitassist.backend.model.SleepRecord;
+import com.fitassist.backend.service.SleepService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,43 +12,41 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sleep")
-@CrossOrigin(origins = "http://localhost:5173") // Vite portuna göre güncellendi
+@CrossOrigin(origins = "*") // React'ten gelen isteklere izin ver
 public class SleepController {
 
     @Autowired
-    private SleepLogRepository sleepLogRepository;
+    private SleepService sleepService;
 
-    @Autowired
-    private MessageSource messageSource;
-
-    // GET İsteği: Geçmiş verileri çekmek için çalışır (Değişmedi)
+    // Tüm kayıtları React'e gönder
     @GetMapping("/all")
-    public List<SleepLog> getAllSleepLogs() {
-        return sleepLogRepository.findAll();
+    public ResponseEntity<List<SleepRecord>> getAll() {
+        return ResponseEntity.ok(sleepService.getAllSleepRecords());
     }
 
-    // POST İsteği: Yeni uyku verisini kaydeder
+    // React'ten gelen yeni kaydı al ve veritabanına ekle
     @PostMapping("/add")
-    public ResponseEntity<Map<String, Object>> addSleepLog(@RequestBody SleepLog sleepLog) {
-        
-        // try-catch kaldırıldı!
-        
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> add(@RequestBody SleepRecord record) {
+        try {
+            sleepService.addSleepRecord(record);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Uyku kaydı başarıyla eklendi!");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Kayıt eklenemedi: " + e.getMessage());
+        }
+    }
 
-        // 1. Veriyi veritabanına kaydet
-        SleepLog savedLog = sleepLogRepository.save(sleepLog);
-
-        // 2. Başarı mesajını o anki seçili dile göre çek (messages.properties dosyasından)
-        String successMessage = messageSource.getMessage(
-                "sleep.save.success", 
-                null, 
-                LocaleContextHolder.getLocale()
-        );
-
-        // 3. Yanıt paketini oluştur
-        response.put("message", successMessage);
-        response.put("data", savedLog);
-
-        return ResponseEntity.ok(response);
+    // React'teki çöp kutusu ikonuna basıldığında gelen silme isteği
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            sleepService.deleteSleepRecord(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Kayıt başarıyla silindi!");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Kayıt silinemedi: " + e.getMessage());
+        }
     }
 }
