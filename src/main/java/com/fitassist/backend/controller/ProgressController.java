@@ -27,15 +27,12 @@ public class ProgressController {
     // GET İsteği: Grafiği çizmek için geçmişteki tüm gelişim kayıtlarını listeler
     @GetMapping("/all")
     public List<ProgressLog> getAllProgressLogs() {
-        // Veritabanındaki tüm tartım kayıtlarını getirir
         return progressLogRepository.findAll();
     }
 
     // POST İsteği: Yeni bir tartım/ölçüm yapıldığında bunu veritabanına ekler
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> addProgressLog(@RequestBody ProgressLog newLog) {
-        
-        // try-catch bloğu tamamen kaldırıldı! Merkezi hata yönetimi devrede.
         
         Map<String, Object> response = new HashMap<>();
 
@@ -59,5 +56,23 @@ public class ProgressController {
         response.put("data", savedLog);
 
         return ResponseEntity.ok(response);
+    }
+
+    // YENİ EKLENEN SİLME İŞLEMİ (DELETE)
+    // Örn: http://localhost:8080/api/progress/delete/5
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteProgressLog(@PathVariable Long id) {
+        try {
+            // ID'ye göre kaydı veritabanından kalıcı olarak sil
+            progressLogRepository.deleteById(id);
+            
+            // Başarı mesajı dön
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Kayıt başarıyla silindi!");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Silme işlemi başarısız: " + e.getMessage());
+        }
     }
 }

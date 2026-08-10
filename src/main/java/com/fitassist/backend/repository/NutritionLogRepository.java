@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface NutritionLogRepository extends JpaRepository<NutritionLog, Long> {
     
-    // Bir günde birden fazla öğün (Kahvaltı, Akşam vb.) olacağı için
-    // List (Liste) veri tipini kullanıyoruz. O günkü tüm yediklerini getirir.
+    // Spring Boot'un harika özelliği: Bu isimlendirme sayesinde sadece metodun adını yazarak
+    // veritabanında "Belirli bir tarihteki tüm besin kayıtlarını getir" sorgusunu çalıştırmış oluyoruz.
     List<NutritionLog> findByDate(LocalDate date);
 }

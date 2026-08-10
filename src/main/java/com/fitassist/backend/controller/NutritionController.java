@@ -1,64 +1,69 @@
 package com.fitassist.backend.controller;
 
 import com.fitassist.backend.model.NutritionLog;
-import com.fitassist.backend.repository.NutritionLogRepository;
+import com.fitassist.backend.service.NutritionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/nutrition")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*") // React (localhost:5173) üzerinden gelen isteklere izin verir
 public class NutritionController {
 
     @Autowired
-    private NutritionLogRepository nutritionLogRepository;
+    private NutritionService nutritionService;
 
-    @Autowired
-    private MessageSource messageSource;
-
-    // GET İsteği: Uygulama açıldığında bugünün tüm besin kayıtlarını getirir
+    // React'in açılışta çağırdığı "Bugünün besinlerini getir" ucu
     @GetMapping("/today")
-    public List<NutritionLog> getTodayNutritionLogs() {
-        LocalDate today = LocalDate.now();
-        // Bugünün tarihine sahip tüm öğünleri veritabanından bulup liste halinde döner
-        return nutritionLogRepository.findByDate(today);
+    public ResponseEntity<List<NutritionLog>> getTodaysNutrition() {
+        List<NutritionLog> logs = nutritionService.getTodaysNutrition();
+        return ResponseEntity.ok(logs);
     }
 
-    // POST İsteği: React üzerinden yeni bir besin eklendiğinde çalışır
+    // React'in "Öğüne Ekle" butonuna basıldığında çağırdığı uç
     @PostMapping("/add")
-    public ResponseEntity<Map<String, Object>> addNutritionLog(@RequestBody NutritionLog newLog) {
-        
-        // try-catch bloğu tamamen kaldırıldı!
-        
-        Map<String, Object> response = new HashMap<>();
-
-        // 1. Eğer React tarafından tarih gönderilmediyse, bugünün tarihini otomatik ekle
-        if (newLog.getDate() == null) {
-            newLog.setDate(LocalDate.now());
+    public ResponseEntity<?> addNutrition(@RequestBody NutritionLog nutritionLog) {
+        try {
+            // Veriyi kaydet
+            nutritionService.addNutrition(nutritionLog);
+            
+            // React tarafının beklediği JSON formatında başarı mesajını hazırla
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Besin başarıyla eklendi!");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Hata durumunda yine React'in yakalayabileceği JSON formatında bir hata dön
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Besin eklenirken bir hata oluştu: " + e.getMessage());
+            
+            return ResponseEntity.badRequest().body(errorResponse);
         }
         
-        // 2. Gelen yeni besin verisini veritabanına kaydet
-        NutritionLog savedLog = nutritionLogRepository.save(newLog);
-
-        // 3. Başarı mesajını o anki seçili dile göre çek
-        String successMessage = messageSource.getMessage(
-                "nutrition.save.success", 
-                null, 
-                LocaleContextHolder.getLocale()
-        );
-
-        // 4. Yanıt paketini oluştur ve React'e gönder
-        response.put("message", successMessage);
-        response.put("data", savedLog);
-
-        return ResponseEntity.ok(response);
+    }
+    
+    // Yanlış eklenen besini silmek için uç nokta
+    // Örn: http://localhost:8080/api/nutrition/delete/5
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteNutrition(@PathVariable Long id) {
+        try {
+            // Veritabanından sil
+            nutritionService.deleteNutrition(id);
+            
+            // React'e başarı mesajı dön
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Besin başarıyla silindi!");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Besin silinirken bir hata oluştu: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }
