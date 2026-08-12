@@ -1,29 +1,26 @@
 package com.fitassist.backend.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDate;
 
 @Entity
-@Table(name = "water_records")
-@Data // Lombok: Getter ve Setter'ları otomatik oluşturur
 public class WaterRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Integer amount; // Tüketilen su miktarı (Örn: 250 ml veya 1 bardak)
+    private Integer amount; // Kaç ml su içildiği
+    private String date;    // Hangi gün içildiği (Örn: 2026-08-12)
 
-    @Column(nullable = false)
-    private LocalDate date;
+    public WaterRecord() {}
 
-    // Veritabanına kayıt yapılmadan hemen önce tarihi otomatik atar
-    @PrePersist
-    protected void onCreate() {
-        if (date == null) {
-            date = LocalDate.now();
-        }
-    }
+    // GETTER VE SETTER METODLARI
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Integer getAmount() { return amount; }
+    public void setAmount(Integer amount) { this.amount = amount; }
+
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
 }

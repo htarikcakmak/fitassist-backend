@@ -1,32 +1,57 @@
 package com.fitassist.backend.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
-@Entity // Bu sınıfın veritabanında bir tablo olacağını belirtir
-@Table(name = "users") // Veritabanındaki tablonun adını "users" yapar
-@Data // Lombok kütüphanesi (Getter, Setter metodlarını otomatik oluşturur)
+@Entity
+@Table(name = "users")
 public class User {
 
-    @Id // Bu alanın benzersiz bir kimlik (Primary Key) olduğunu belirtir
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // ID'nin 1, 2, 3 diye otomatik artmasını sağlar
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false) // Bu alanın boş bırakılamayacağını (Zorunlu) belirtir
     private String name;
-
-    @Column(nullable = false, unique = true) // E-posta zorunludur ve başka biri aynı e-postayı kullanamaz
     private String email;
+    private String password;
 
-    @Column(nullable = false)
-    private String password; // İleride bu şifreyi güvenlik için şifreleyerek (hash) kaydedeceğiz
-
-    // Fiziksel metrikler (Kayıt olurken girilmeyebileceği için nullable = true, yani boş olabilir diyoruz)
+    // YENİ EKLENEN PROFİL ALANLARI
+    private Integer height;
+    private Integer weight;
     private Integer age;
-    private Double height;
-    private Double weight;
+    private String goal;
     
-    private String goal; // "Kilo Verme", "Kas Kazanımı" vb.
-    
-    private String imageUrl; // Profil resminin internet adresi veya dosya yolu
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String imageUrl;
+
+    // Constructor'lar (Boş kurucu metod zorunludur)
+    public User() {}
+
+    // GETTER VE SETTER METODLARI
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public Integer getHeight() { return height; }
+    public void setHeight(Integer height) { this.height = height; }
+
+    public Integer getWeight() { return weight; }
+    public void setWeight(Integer weight) { this.weight = weight; }
+
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+
+    public String getGoal() { return goal; }
+    public void setGoal(String goal) { this.goal = goal; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }
