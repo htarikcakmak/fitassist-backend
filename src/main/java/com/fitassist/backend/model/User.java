@@ -54,4 +54,33 @@ public class User {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    private String language = "tr"; 
+    private String themeBg = "#d8c97f"; 
+    private String themePrimary = "#6a9433";
+    // --- YENİ EKLENEN AYARLAR İÇİN GETTER VE SETTER METODLARI ---
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getThemeBg() {
+        return themeBg;
+    }
+
+    public void setThemeBg(String themeBg) {
+        this.themeBg = themeBg;
+    }
+
+    public String getThemePrimary() {
+        return themePrimary;
+    }
+
+    public void setThemePrimary(String themePrimary) {
+        this.themePrimary = themePrimary;
+    }
 }
