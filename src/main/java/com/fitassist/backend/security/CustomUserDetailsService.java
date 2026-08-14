@@ -1,4 +1,4 @@
-package com.fitassist.security;
+package com.fitassist.backend.security;
 
 import com.fitassist.backend.model.User;
 import com.fitassist.backend.repository.UserRepository;

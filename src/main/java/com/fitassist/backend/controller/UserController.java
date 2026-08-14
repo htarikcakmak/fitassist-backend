@@ -8,7 +8,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.fitassist.backend.model.User;
 import com.fitassist.backend.repository.UserRepository;
-import com.fitassist.security.JwtUtil;
+import com.fitassist.backend.security.JwtUtil;
+import com.fitassist.backend.model.PasswordResetToken;
+import com.fitassist.backend.repository.PasswordResetTokenRepository;
+import java.util.UUID;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.Optional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +36,76 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
+
+    // 1. ŞİFREMİ UNUTTUM TALEBİ
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı."));
+        }
+
+        User user = userOptional.get();
+
+        // Rastgele benzersiz bir token (anahtar) üretiyoruz
+        String token = UUID.randomUUID().toString();
+
+        // Token için 15 dakikalık geçerlilik süresi belirliyoruz
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MINUTE, 15);
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        resetToken.setExpiryDate(calendar.getTime());
+
+        // Veritabanına kaydediyoruz
+        tokenRepository.save(resetToken);
+
+        // ŞİMDİLİK TEST İÇİN KONSOLA YAZDIRIYORUZ
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        System.out.println("----- ŞİFRE SIFIRLAMA LİNKİ -----");
+        System.out.println("Kullanıcı: " + email);
+        System.out.println("Link: " + resetLink);
+        System.out.println("---------------------------------");
+
+        return ResponseEntity.ok(Map.of("message", "Şifre sıfırlama bağlantısı oluşturuldu. Konsolu kontrol edin."));
+    }
+
+    // 2. YENİ ŞİFREYİ BELİRLEME
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        PasswordResetToken resetToken = tokenRepository.findByToken(token);
+
+        if (resetToken == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Geçersiz veya hatalı anahtar."));
+        }
+
+        // Sürenin geçip geçmediğini kontrol ediyoruz
+        if (resetToken.getExpiryDate().before(new Date())) {
+            tokenRepository.delete(resetToken);
+            return ResponseEntity.badRequest().body(Map.of("message", "Bu bağlantının süresi dolmuş. Lütfen tekrar talep edin."));
+        }
+
+        // Her şey geçerliyse kullanıcının şifresini güvenli (BCrypt) olarak güncelliyoruz
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Kullanılmış token'ı bir daha kullanılmaması için veritabanından siliyoruz
+        tokenRepository.delete(resetToken);
+
+        return ResponseEntity.ok(Map.of("message", "Şifreniz başarıyla güncellendi."));
+    }
 
     // 1. KAYIT OLMA (REGISTER)
     @PostMapping("/register")

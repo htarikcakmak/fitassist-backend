@@ -1,4 +1,4 @@
-package com.fitassist.security;
+package com.fitassist.backend.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
