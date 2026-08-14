@@ -1,4 +1,4 @@
-package com.fitassist.security;
+package com.fitassist.backend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

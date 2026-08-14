@@ -1,4 +1,4 @@
-package com.fitassist.security;
+package com.fitassist.backend.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,30 +23,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // API kullandığımız için CSRF korumasını kapatıyoruz
-            .cors(cors -> cors.configure(http)) // React'ten gelen isteklere (CORS) izin veriyoruz
+            .csrf(csrf -> csrf.disable()) 
+            .cors(cors -> cors.configure(http)) 
             .authorizeHttpRequests(auth -> auth
-                // SADECE Giriş Yap ve Kayıt Ol uçlarına biletsiz (tokensız) erişime izin veriyoruz
-                .requestMatchers("/api/users/login", "/api/users/register").permitAll()
-                // Geri kalan TÜM isteklere yetkilendirme (Token) zorunluluğu getiriyoruz
+                .requestMatchers("/api/users/login", "/api/users/register", "/api/users/forgot-password", "/api/users/reset-password").permitAll()
                 .anyRequest().authenticated()
             )
-            // Oturum (Session) yönetimini kapatıyoruz çünkü her istekte Token kontrolü yapacağız (Stateless)
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // Yazdığımız JwtRequestFilter'ı, Spring'in standart şifre filtresinden hemen ÖNCE çalışması için ekliyoruz
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Şifreleri veritabanında güvenli tutmak için BCrypt algoritmasını tanımlıyoruz
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Spring Security'nin giriş yaparken kullanıcıyı doğrulayacak yöneticisini dışarı açıyoruz
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
