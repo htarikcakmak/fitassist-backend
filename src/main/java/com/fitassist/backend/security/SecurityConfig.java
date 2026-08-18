@@ -60,9 +60,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             
-            .csrf(csrf -> csrf.disable())
-            
-            .cors(Customizer.withDefaults())
+            .cors(Customizer.withDefaults()) // CORS'u aktifleştirir
+
+
+             .csrf(csrf -> csrf.disable())
             
             .authorizeHttpRequests(auth -> auth
             
