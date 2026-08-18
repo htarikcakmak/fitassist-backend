@@ -1,18 +1,26 @@
-package com.fitassist.backend.config;
+package com.fitassist.backend.config; // Kendi paket isminle değiştir
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
-public class CorsConfig implements WebMvcConfigurer {
+public class CorsConfig {
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        // Uygulamadaki tüm sayfalara (/**) dışarıdan gelecek isteklere izin veriyoruz
-        registry.addMapping("/**")
-                .allowedOrigins("*") // Tüm kaynaklara (mobil cihazlar, farklı siteler) izin ver
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // İzin verilen işlem türleri
-                .allowedHeaders("*"); // Tüm veri başlıklarına izin ver
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        
+        // Güvenlik ayarları: Tüm cihazlardan, tüm metodlardan gelen isteklere izin veriyoruz
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*"); // React, Mobil, Localhost hepsine kapıyı açar
+        config.addAllowedHeader("*");        // Bütün veri tiplerini kabul eder
+        config.addAllowedMethod("*");        // GET, POST, PUT, DELETE hepsine izin verir
+        
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 }
