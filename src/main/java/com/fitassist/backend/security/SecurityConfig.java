@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableWebSecurity
@@ -53,5 +54,25 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            
+            .csrf(csrf -> csrf.disable())
+            
+            .cors(Customizer.withDefaults())
+            
+            .authorizeHttpRequests(auth -> auth
+            
+                .anyRequest().permitAll()
+            )
+
+            .formLogin(form -> form.disable())
+
+            .httpBasic(basic -> basic.disable());
+
+        return http.build();
     }
 }
