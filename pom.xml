@@ -70,6 +70,13 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- PostgreSQL Veritabanı Sürücüsü -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- JWT (JSON Web Token) İşlemleri İçin Kütüphaneler -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
