@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.fitassist.backend.model.User;
 import com.fitassist.backend.repository.UserRepository;
 import com.fitassist.backend.security.JwtUtil;
+import com.fitassist.backend.dto.LoginRequest;
 import com.fitassist.backend.model.PasswordResetToken;
 import com.fitassist.backend.repository.PasswordResetTokenRepository;
 import java.util.UUID;
@@ -127,27 +128,30 @@ public class UserController {
     }
 
     // 2. GİRİŞ YAPMA (LOGIN)
+
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody User loginData) {
-        try {
-            // Spring Security üzerinden E-posta ve Şifre kontrolü yapıyoruz
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
-            );
-        } catch (Exception e) {
-            // Şifre veya E-posta yanlışsa hata döndür
-            return ResponseEntity.badRequest().body(Map.of("message", "E-posta veya şifre hatalı!"));
-        }
 
-        // Giriş başarılıysa kullanıcıyı veritabanından bul
-        User user = userRepository.findByEmail(loginData.getEmail()).get();
-        
-        // Başarılı giriş için yepyeni bir Token üret
-        String jwtToken = jwtUtil.generateToken(user.getEmail());
-
-        Map<String, Object> response = buildAuthResponse(user, jwtToken);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginData) {
+     try {
+        // Spring Security üzerinden E-posta ve Şifre kontrolü yapıyoruz
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
+        );
+    } catch (Exception e) {
+        // Şifre veya E-posta yanlışsa yakala ve frontend'e hata döndür
+        return ResponseEntity.badRequest().body(Map.of("message", "E-posta veya şifre hatalı!"));
     }
+
+    // Giriş başarılıysa kullanıcıyı veritabanından e-posta adresine göre bul
+    User user = userRepository.findByEmail(loginData.getEmail()).get();
+    
+    // Başarılı giriş için yepyeni bir güvenlik anahtarı (JWT Token) üret
+    String jwtToken = jwtUtil.generateToken(user.getEmail());
+
+    // Yanıtı paketle ve React'e (ön yüze) gönder
+    Map<String, Object> response = buildAuthResponse(user, jwtToken);
+    return ResponseEntity.ok(response);
+  }
 
     // 3. PROFİL GÜNCELLEME
     @PutMapping("/update/{id}")
