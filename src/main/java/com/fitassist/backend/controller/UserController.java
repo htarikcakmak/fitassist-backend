@@ -10,6 +10,7 @@ import com.fitassist.backend.model.User;
 import com.fitassist.backend.repository.UserRepository;
 import com.fitassist.backend.security.JwtUtil;
 import com.fitassist.backend.dto.LoginRequest;
+import com.fitassist.backend.dto.RegisterRequest;
 import com.fitassist.backend.model.PasswordResetToken;
 import com.fitassist.backend.repository.PasswordResetTokenRepository;
 import java.util.UUID;
@@ -110,22 +111,37 @@ public class UserController {
 
     // 1. KAYIT OLMA (REGISTER)
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        // E-posta kullanılıyor mu kontrolü
-        if(userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Bu e-posta adresi zaten kullanılıyor!"));
+
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
+    try {
+        // 1. E-posta daha önce kullanılmış mı kontrol et
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Bu e-posta adresi zaten kullanımda!"));
         }
 
-        // Şifreyi BCrypt ile şifreleyerek veritabanına kaydediyoruz
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User savedUser = userRepository.save(user);
+        // 2. Yeni bir kullanıcı nesnesi oluştur ve DTO'dan gelen verileri aktar
+        User newUser = new User();
+        newUser.setName(request.getName());
+        newUser.setEmail(request.getEmail());
+        
+        // KRİTİK ADIM: Şifreyi veritabanına düz metin olarak değil, şifreleyerek (BCrypt) kaydetmeliyiz.
+        // Eğer projende passwordEncoder tanımlı değilse bu satır hata verebilir. (Aşağıda belirttim)
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // Kullanıcı kayıt olur olmaz otomatik giriş yapması için ona Token üretiyoruz
-        String jwtToken = jwtUtil.generateToken(savedUser.getEmail());
+        // 3. Varsayılan (default) değerleri atayabilirsin
+        newUser.setGoal("Vücut Kompozisyonu");
+        
+        // 4. Veritabanına kaydet
+        userRepository.save(newUser);
 
-        Map<String, Object> response = buildAuthResponse(savedUser, jwtToken);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("message", "Kayıt başarıyla oluşturuldu!"));
+        
+    } catch (Exception e) {
+        // Eğer sunucuda başka bir hata çıkarsa, 500 hatasının nedenini terminale (loglara) yazdırır
+        e.printStackTrace(); 
+        return ResponseEntity.internalServerError().body(Map.of("message", "Sunucu hatası: " + e.getMessage()));
     }
+}
 
     // 2. GİRİŞ YAPMA (LOGIN)
 
