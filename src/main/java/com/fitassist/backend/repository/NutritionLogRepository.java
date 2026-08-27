@@ -10,7 +10,6 @@ import java.util.List;
 @Repository
 public interface NutritionLogRepository extends JpaRepository<NutritionLog, Long> {
     
-    // Spring Boot'un harika özelliği: Bu isimlendirme sayesinde sadece metodun adını yazarak
-    // veritabanında "Belirli bir tarihteki tüm besin kayıtlarını getir" sorgusunu çalıştırmış oluyoruz.
-    List<NutritionLog> findByDate(LocalDate date);
+    // YENİ: Hem kullanıcının e-postasına hem de tarihe göre filtreleme yapan akıllı sorgu
+    List<NutritionLog> findByUserEmailAndDate(String email, LocalDate date);
 }

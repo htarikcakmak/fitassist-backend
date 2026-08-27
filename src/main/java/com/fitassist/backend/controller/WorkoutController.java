@@ -6,31 +6,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/workout")
-@CrossOrigin(origins = "*") // React üzerinden gelecek (localhost:5173) isteklere engel olma
+@CrossOrigin(origins = "*") 
 public class WorkoutController {
 
     @Autowired
     private WorkoutService workoutService;
 
-    // React'in açılışta sayfaya basmak için çekeceği "Bugünün Antrenmanları" ucu
+    // DİKKAT: Principal ile sadece giriş yapanın verisini çekiyoruz
     @GetMapping("/today")
-    public ResponseEntity<List<WorkoutRecord>> getTodaysWorkouts() {
-        return ResponseEntity.ok(workoutService.getTodaysWorkouts());
+    public ResponseEntity<List<WorkoutRecord>> getTodaysWorkouts(Principal principal) {
+        return ResponseEntity.ok(workoutService.getTodaysWorkouts(principal.getName()));
     }
 
-    // React'ten yeni bir hareket eklendiğinde çalışacak uç nokta
+    // React'ten gelen yeni hareketi, principal içindeki e-posta ile servise iletiyoruz
     @PostMapping("/add")
-    public ResponseEntity<?> addWorkout(@RequestBody WorkoutRecord record) {
+    public ResponseEntity<?> addWorkout(@RequestBody WorkoutRecord record, Principal principal) {
         try {
-            workoutService.addWorkout(record);
+            workoutService.addWorkout(record, principal.getName());
             
-            // React tarafında gösterilecek başarı mesajı (İngilizce standartlarına uygun)
             Map<String, String> response = new HashMap<>();
             response.put("message", "Workout record successfully added!");
             
@@ -42,11 +42,11 @@ public class WorkoutController {
         }
     }
 
-    // React'te çöp kutusuna basıldığında çalışacak silme ucu
+    // React'te çöp kutusuna basıldığında çalışacak güvenlikli silme ucu
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteWorkout(@PathVariable Long id) {
+    public ResponseEntity<?> deleteWorkout(@PathVariable Long id, Principal principal) {
         try {
-            workoutService.deleteWorkout(id);
+            workoutService.deleteWorkout(id, principal.getName());
             
             Map<String, String> response = new HashMap<>();
             response.put("message", "Workout record deleted successfully!");
@@ -61,7 +61,7 @@ public class WorkoutController {
 
     // React'in geçmiş antrenmanları listelemek için çağıracağı uç nokta
     @GetMapping("/all")
-    public ResponseEntity<List<WorkoutRecord>> getAllWorkouts() {
-        return ResponseEntity.ok(workoutService.getAllWorkouts());
+    public ResponseEntity<List<WorkoutRecord>> getAllWorkouts(Principal principal) {
+        return ResponseEntity.ok(workoutService.getAllWorkouts(principal.getName()));
     }
 }

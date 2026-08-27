@@ -11,20 +11,28 @@ public class User {
     private Long id;
 
     private String name;
+    
+    @Column(unique = true, nullable = false)
     private String email;
+    
     private String password;
 
-    // YENİ EKLENEN PROFİL ALANLARI
-    private Integer height;
-    private Integer weight;
-    private Integer age;
-    private String goal;
+    // YENİ: Null hatasını önlemek için başlangıç değerleri atıyoruz (0)
+    private Integer height = 0;
+    private Integer weight = 0;
+    private Integer age = 0;
+    private String goal = "Vücut Kompozisyonu";
     
     @Lob
     @Column(columnDefinition = "LONGTEXT")
-    private String imageUrl;
+    // YENİ: Başlangıçta boş resim yerine varsayılan avatar linki veriyoruz
+    private String imageUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=User&backgroundColor=transparent";
 
-    // Constructor'lar (Boş kurucu metod zorunludur)
+    private String language = "tr"; 
+    private String themeBg = "#d8c97f"; 
+    private String themePrimary = "#6a9433";
+
+    // Constructor (Boş kurucu metod zorunludur)
     public User() {}
 
     // GETTER VE SETTER METODLARI
@@ -55,32 +63,12 @@ public class User {
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    private String language = "tr"; 
-    private String themeBg = "#d8c97f"; 
-    private String themePrimary = "#6a9433";
-    // --- YENİ EKLENEN AYARLAR İÇİN GETTER VE SETTER METODLARI ---
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 
-    public String getLanguage() {
-        return language;
-    }
+    public String getThemeBg() { return themeBg; }
+    public void setThemeBg(String themeBg) { this.themeBg = themeBg; }
 
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public String getThemeBg() {
-        return themeBg;
-    }
-
-    public void setThemeBg(String themeBg) {
-        this.themeBg = themeBg;
-    }
-
-    public String getThemePrimary() {
-        return themePrimary;
-    }
-
-    public void setThemePrimary(String themePrimary) {
-        this.themePrimary = themePrimary;
-    }
+    public String getThemePrimary() { return themePrimary; }
+    public void setThemePrimary(String themePrimary) { this.themePrimary = themePrimary; }
 }
