@@ -1,5 +1,6 @@
 package com.fitassist.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,9 +15,14 @@ public class WorkoutRecord {
     private Integer sets;
     private Integer reps;
     
-    // YENİ EKLENEN ALANLAR (Hatanın sebebi buranın eksik olmasıydı)
     private String category; // Push, Pull, Leg verisi için
-    private String date;     // Antrenman tarihi için
+    private String date;     // Antrenman tarihi için (String formatında)
+
+    // YENİ: Bu antrenmanın hangi kullanıcıya ait olduğunu belirten mühür
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore // React'e veri gönderirken döngüye girmeyi engeller
+    private User user;
 
     public WorkoutRecord() {}
 
@@ -41,4 +47,7 @@ public class WorkoutRecord {
 
     public String getDate() { return date; }
     public void setDate(String date) { this.date = date; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

@@ -6,29 +6,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/water")
-@CrossOrigin(origins = "*") // React üzerinden gelen isteklere izin ver
+@CrossOrigin(origins = "*") 
 public class WaterController {
 
     @Autowired
     private WaterService waterService;
 
-    // React'in açılışta çağıracağı "Bugünün su kayıtlarını getir" ucu
+    // DİKKAT: Metotlara "Principal principal" ekledik. Bu, JWT token'ı okuyup e-postayı verir.
     @GetMapping("/today")
-    public ResponseEntity<List<WaterRecord>> getTodaysWater() {
-        return ResponseEntity.ok(waterService.getTodaysWater());
+    public ResponseEntity<List<WaterRecord>> getTodaysWater(Principal principal) {
+        return ResponseEntity.ok(waterService.getTodaysWater(principal.getName()));
     }
 
-    // React'ten gelen yeni su ekleme isteği
     @PostMapping("/add")
-    public ResponseEntity<?> addWater(@RequestBody WaterRecord record) {
+    public ResponseEntity<?> addWater(@RequestBody WaterRecord record, Principal principal) {
         try {
-            waterService.addWater(record);
+            waterService.addWater(record, principal.getName());
             Map<String, String> response = new HashMap<>();
             response.put("message", "Su kaydı başarıyla eklendi!");
             return ResponseEntity.ok(response);
@@ -37,11 +37,10 @@ public class WaterController {
         }
     }
 
-    // React'teki çöp kutusu ikonuna basıldığında gelen silme isteği
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteWater(@PathVariable Long id) {
+    public ResponseEntity<?> deleteWater(@PathVariable Long id, Principal principal) {
         try {
-            waterService.deleteWater(id);
+            waterService.deleteWater(id, principal.getName());
             Map<String, String> response = new HashMap<>();
             response.put("message", "Su kaydı başarıyla silindi!");
             return ResponseEntity.ok(response);
@@ -50,9 +49,8 @@ public class WaterController {
         }
     }
 
-    // React'in haftalık grafiği çizmek için çağıracağı uç nokta
     @GetMapping("/all")
-    public ResponseEntity<List<WaterRecord>> getAllWater() {
-        return ResponseEntity.ok(waterService.getAllWaterRecords());
+    public ResponseEntity<List<WaterRecord>> getAllWater(Principal principal) {
+        return ResponseEntity.ok(waterService.getAllWaterRecords(principal.getName()));
     }
 }

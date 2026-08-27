@@ -1,12 +1,13 @@
 package com.fitassist.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "nutrition_logs")
-@Data // Lombok: Getter ve Setter metodlarını otomatik oluşturur
+@Data 
 public class NutritionLog {
 
     @Id
@@ -24,11 +25,15 @@ public class NutritionLog {
     private Double carbs;
     private Double fats;
 
-    // Bu kaydın hangi gün eklendiğini tutmak için tarih sütunu
     @Column(nullable = false)
     private LocalDate date;
 
-    // Veritabanına kayıt yapılmadan hemen önce otomatik olarak bugünün tarihini atar
+    // YENİ: Bu yemeği hangi kullanıcının yediğini belirten mühür
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore // React'e veri gönderirken sonsuz döngü çökmesini engeller
+    private User user;
+
     @PrePersist
     protected void onCreate() {
         if (date == null) {

@@ -1,6 +1,8 @@
 package com.fitassist.backend.service;
 
+import com.fitassist.backend.model.User;
 import com.fitassist.backend.model.WaterRecord;
+import com.fitassist.backend.repository.UserRepository;
 import com.fitassist.backend.repository.WaterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,23 +16,37 @@ public class WaterService {
     @Autowired
     private WaterRepository waterRepository;
 
-    // 1. Sadece bugüne ait su kayıtlarını getir
-    public List<WaterRecord> getTodaysWater() {
-        return waterRepository.findByDate(LocalDate.now());
+    @Autowired
+    private UserRepository userRepository;
+
+    // Sadece token sahibi kullanıcının bugünkü suyunu getirir
+    public List<WaterRecord> getTodaysWater(String userEmail) {
+        String today = LocalDate.now().toString();
+        return waterRepository.findByUserEmailAndDate(userEmail, today);
     }
 
-    // 2. Yeni su kaydı ekle
-    public WaterRecord addWater(WaterRecord record) {
-        return waterRepository.save(record);
+    // Suyu kaydederken arka planda asıl sahibini (User) bulup eşitler
+    public void addWater(WaterRecord record, String userEmail) {
+        User currentUser = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı!"));
+            
+        record.setUser(currentUser); // Kaydı mühürlüyoruz
+        waterRepository.save(record);
     }
 
-    // 3. Su kaydını ID'sine göre sil
-    public void deleteWater(Long id) {
-        waterRepository.deleteById(id);
+    // Güvenlik: Silinmek istenen kayıt gerçekten bu kullanıcıya mı ait?
+    public void deleteWater(Long id, String userEmail) {
+        WaterRecord record = waterRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Kayıt bulunamadı!"));
+            
+        if (!record.getUser().getEmail().equals(userEmail)) {
+            throw new RuntimeException("Bu kaydı silme yetkiniz yok!");
+        }
+        waterRepository.delete(record);
     }
 
-    // Tüm geçmiş su kayıtlarını getirir (Haftalık grafik için)
-    public List<WaterRecord> getAllWaterRecords() {
-        return waterRepository.findAll();
+    // Sadece token sahibi kullanıcının tüm sularını getirir
+    public List<WaterRecord> getAllWaterRecords(String userEmail) {
+        return waterRepository.findByUserEmail(userEmail);
     }
 }

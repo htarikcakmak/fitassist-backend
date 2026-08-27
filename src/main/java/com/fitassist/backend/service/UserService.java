@@ -1,11 +1,11 @@
-package com.fitassist.backend.service; // DÜZELTME: Adres 'backend' olarak güncellendi!
+package com.fitassist.backend.service;
 
 import com.fitassist.backend.model.User;
 import com.fitassist.backend.repository.UserRepository;
+import com.fitassist.backend.dto.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -13,30 +13,43 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // 1. KAYIT OLMA (REGISTER) İŞLEMİ
-    public User registerUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Bu e-posta adresi zaten kullanılıyor!");
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // 1. KAYIT OLMA MANTIĞI
+    public User registerUser(RegisterRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Bu e-posta adresi zaten kullanımda!");
         }
+
+        User newUser = new User();
+        newUser.setName(request.getName());
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        return userRepository.save(newUser);
+    }
+
+    // 2. PROFİL GÜNCELLEME MANTIĞI VE GÜVENLİK
+    public User updateUserProfile(Long id, User updatedData, String currentUserEmail) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+
+        // Güvenlik kontrolü: Güncellenecek profil gerçekten token sahibine mi ait?
+        if (!user.getEmail().equals(currentUserEmail)) {
+            throw new RuntimeException("Bu profili güncelleme yetkiniz yok!");
+        }
+
+        // Null hatalarını önlemek için kontrollerle atama yapıyoruz
+        user.setHeight(updatedData.getHeight() != null ? updatedData.getHeight() : 0);
+        user.setWeight(updatedData.getWeight() != null ? updatedData.getWeight() : 0);
+        user.setAge(updatedData.getAge() != null ? updatedData.getAge() : 0);
+        user.setGoal(updatedData.getGoal());
+        user.setImageUrl(updatedData.getImageUrl());
+        user.setLanguage(updatedData.getLanguage());
+        user.setThemeBg(updatedData.getThemeBg());
+        user.setThemePrimary(updatedData.getThemePrimary());
+
         return userRepository.save(user);
-    }
-
-    // 2. GİRİŞ YAPMA (LOGIN) İŞLEMİ
-    public User loginUser(String email, String password) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (user.getPassword().equals(password)) {
-                return user; 
-            }
-        }
-        throw new RuntimeException("E-posta adresi veya şifre hatalı!");
-    }
-
-    // 3. KULLANICI BİLGİLERİNİ GETİRME
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı!"));
     }
 }

@@ -1,5 +1,6 @@
 package com.fitassist.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,6 +13,12 @@ public class WaterRecord {
     private Integer amount; // Kaç ml su içildiği
     private String date;    // Hangi gün içildiği (Örn: 2026-08-12)
 
+    // YENİ: Bu kaydın hangi kullanıcıya ait olduğunu belirten ilişki
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore // DİKKAT: Verileri React'e gönderirken "Kullanıcı -> Su -> Kullanıcı" sonsuz döngüsünü engeller
+    private User user;
+
     public WaterRecord() {}
 
     // GETTER VE SETTER METODLARI
@@ -23,4 +30,7 @@ public class WaterRecord {
 
     public String getDate() { return date; }
     public void setDate(String date) { this.date = date; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }
