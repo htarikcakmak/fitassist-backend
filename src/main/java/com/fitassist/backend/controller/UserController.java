@@ -14,7 +14,7 @@ import com.fitassist.backend.dto.LoginRequest;
 import com.fitassist.backend.dto.RegisterRequest;
 import com.fitassist.backend.model.PasswordResetToken;
 import com.fitassist.backend.repository.PasswordResetTokenRepository;
-import com.fitassist.backend.service.UserService; // YENİ: Servis sınıfımızı içe aktardık
+import com.fitassist.backend.service.UserService;
 
 import java.security.Principal;
 import java.util.UUID;
@@ -44,7 +44,6 @@ public class UserController {
     @Autowired
     private PasswordResetTokenRepository tokenRepository;
 
-    // YENİ: İş mantığını devredeceğimiz servis sınıfımızı dahil ediyoruz
     @Autowired
     private UserService userService;
 
@@ -103,7 +102,6 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "Şifreniz başarıyla güncellendi."));
     }
 
-    // GÜNCELLENDİ: Kayıt işlemi tamamen Servis katmanına devredildi
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
         try {
@@ -131,19 +129,21 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // GÜNCELLENDİ: Profil güncelleme ve güvenlik işlemi tamamen Servis katmanına devredildi
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody User updatedData, Principal principal) {
+        // YENİ GÜVENLİK KALKANI: Token yoksa veya süresi dolmuşsa çökmeyi engeller
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Yetkisiz işlem: Geçerli bir oturum bulunamadı. Lütfen tekrar giriş yapın."));
+        }
+
         try {
-            // Profil güncelleme işlemini servise yönlendiriyoruz
             User updatedUser = userService.updateUserProfile(id, updatedData, principal.getName());
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
-            // Eğer servis "yetkiniz yok" hatası fırlattıysa, 403 (Forbidden) kodu gönder
             if(e.getMessage().contains("yetkiniz yok")) {
-                return ResponseEntity.status(403).body(e.getMessage());
+                return ResponseEntity.status(403).body(Map.of("message", e.getMessage()));
             }
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 
