@@ -3,6 +3,8 @@ package com.fitassist.backend.model;
 import jakarta.persistence.*;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class PasswordResetToken {
     
@@ -14,6 +16,7 @@ public class PasswordResetToken {
     private String token;
 
     // Bu anahtarın hangi kullanıcıya ait olduğunu bağlıyoruz
+    @JsonIgnore
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
     private User user;

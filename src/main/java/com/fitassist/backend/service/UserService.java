@@ -6,6 +6,7 @@ import com.fitassist.backend.dto.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -16,7 +17,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 1. KAYIT OLMA MANTIĞI
+    @Transactional
     public User registerUser(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Bu e-posta adresi zaten kullanımda!");
@@ -30,48 +31,41 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
-    // 2. PROFİL GÜNCELLEME MANTIĞI VE GÜVENLİK
+    @Transactional
     public User updateUserProfile(Long id, User updatedData, String currentUserEmail) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-        // Güvenlik kontrolü: Güncellenecek profil gerçekten token sahibine mi ait?
-        if (!user.getEmail().equals(currentUserEmail)) {
+        // GÜÇLENDİRİLDİ: E-posta büyük/küçük harf duyarsız kontrol ediliyor (equalsIgnoreCase)
+        if (!user.getEmail().equalsIgnoreCase(currentUserEmail)) {
             throw new RuntimeException("Bu profili güncelleme yetkiniz yok!");
         }
 
-        // AKILLI (KISMİ) GÜNCELLEME ALANI:
-        // React'ten hangi veri gönderildiyse (null değilse) sadece o veriyi günceller.
-        // Gönderilmeyen verileri atlar ve veritabanındaki mevcut değerli bilgileri (boy, kilo vb.) korur.
-        
+        // DÜZELTİLDİ: Arayüzden isim değişikliği geldiğinde veritabanına kaydetmesi sağlandı
+        if (updatedData.getName() != null) {
+            user.setName(updatedData.getName());
+        }
         if (updatedData.getHeight() != null) {
             user.setHeight(updatedData.getHeight());
         }
-        
         if (updatedData.getWeight() != null) {
             user.setWeight(updatedData.getWeight());
         }
-        
         if (updatedData.getAge() != null) {
             user.setAge(updatedData.getAge());
         }
-        
         if (updatedData.getGoal() != null) {
             user.setGoal(updatedData.getGoal());
         }
-        
         if (updatedData.getImageUrl() != null) {
             user.setImageUrl(updatedData.getImageUrl());
         }
-        
         if (updatedData.getLanguage() != null) {
             user.setLanguage(updatedData.getLanguage());
         }
-        
         if (updatedData.getThemeBg() != null) {
             user.setThemeBg(updatedData.getThemeBg());
         }
-        
         if (updatedData.getThemePrimary() != null) {
             user.setThemePrimary(updatedData.getThemePrimary());
         }
