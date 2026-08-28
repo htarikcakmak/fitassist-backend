@@ -8,46 +8,41 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sleep")
-@CrossOrigin(origins = "*") // React'ten gelen isteklere izin ver
+@CrossOrigin(origins = "*") 
 public class SleepController {
 
     @Autowired
     private SleepService sleepService;
 
-    // DİKKAT: "Principal principal" ekledik. Kimin istek attığını bize otomatik söyler.
     @GetMapping("/all")
-    public ResponseEntity<List<SleepRecord>> getAll(Principal principal) {
+    public ResponseEntity<?> getAll(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         return ResponseEntity.ok(sleepService.getAllSleepRecords(principal.getName()));
     }
 
-    // React'ten gelen yeni kaydı al ve giriş yapan kullanıcının e-postasıyla servise yolla
     @PostMapping("/add")
     public ResponseEntity<?> add(@RequestBody SleepRecord record, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         try {
             sleepService.addSleepRecord(record, principal.getName());
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Uyku kaydı başarıyla eklendi!");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("message", "Uyku kaydı başarıyla eklendi!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Kayıt eklenemedi: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", "Kayıt eklenemedi: " + e.getMessage()));
         }
     }
 
-    // React'teki çöp kutusu ikonuna basıldığında gelen silme isteği
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         try {
             sleepService.deleteSleepRecord(id, principal.getName());
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Kayıt başarıyla silindi!");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("message", "Kayıt başarıyla silindi!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Kayıt silinemedi: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", "Kayıt silinemedi: " + e.getMessage()));
         }
     }
 }

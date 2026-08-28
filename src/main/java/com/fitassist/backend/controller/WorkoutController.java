@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,49 +18,37 @@ public class WorkoutController {
     @Autowired
     private WorkoutService workoutService;
 
-    // DİKKAT: Principal ile sadece giriş yapanın verisini çekiyoruz
     @GetMapping("/today")
-    public ResponseEntity<List<WorkoutRecord>> getTodaysWorkouts(Principal principal) {
+    public ResponseEntity<?> getTodaysWorkouts(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         return ResponseEntity.ok(workoutService.getTodaysWorkouts(principal.getName()));
     }
 
-    // React'ten gelen yeni hareketi, principal içindeki e-posta ile servise iletiyoruz
     @PostMapping("/add")
     public ResponseEntity<?> addWorkout(@RequestBody WorkoutRecord record, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         try {
             workoutService.addWorkout(record, principal.getName());
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Workout record successfully added!");
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("message", "Antrenman başarıyla eklendi!"));
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Error adding workout: " + e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Map.of("message", "Antrenman eklenemedi: " + e.getMessage()));
         }
     }
 
-    // React'te çöp kutusuna basıldığında çalışacak güvenlikli silme ucu
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteWorkout(@PathVariable Long id, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         try {
             workoutService.deleteWorkout(id, principal.getName());
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Workout record deleted successfully!");
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("message", "Antrenman başarıyla silindi!"));
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Error deleting workout: " + e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Map.of("message", "Antrenman silinemedi: " + e.getMessage()));
         }
     }
 
-    // React'in geçmiş antrenmanları listelemek için çağıracağı uç nokta
     @GetMapping("/all")
-    public ResponseEntity<List<WorkoutRecord>> getAllWorkouts(Principal principal) {
+    public ResponseEntity<?> getAllWorkouts(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         return ResponseEntity.ok(workoutService.getAllWorkouts(principal.getName()));
     }
 }

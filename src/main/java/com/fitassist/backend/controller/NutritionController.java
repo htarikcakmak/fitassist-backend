@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,41 +18,31 @@ public class NutritionController {
     @Autowired
     private NutritionService nutritionService;
 
-    // DİKKAT: Principal eklenerek kimin istek attığı tespit ediliyor
     @GetMapping("/today")
-    public ResponseEntity<List<NutritionLog>> getTodaysNutrition(Principal principal) {
-        List<NutritionLog> logs = nutritionService.getTodaysNutrition(principal.getName());
-        return ResponseEntity.ok(logs);
+    public ResponseEntity<?> getTodaysNutrition(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
+        return ResponseEntity.ok(nutritionService.getTodaysNutrition(principal.getName()));
     }
 
     @PostMapping("/add")
     public ResponseEntity<?> addNutrition(@RequestBody NutritionLog nutritionLog, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         try {
             nutritionService.addNutrition(nutritionLog, principal.getName());
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Besin başarıyla eklendi!");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("message", "Besin başarıyla eklendi!"));
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Besin eklenirken bir hata oluştu: " + e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Map.of("message", "Besin eklenirken hata oluştu: " + e.getMessage()));
         }
     }
     
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteNutrition(@PathVariable Long id, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body(Map.of("message", "Oturum süresi doldu."));
         try {
             nutritionService.deleteNutrition(id, principal.getName());
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Besin başarıyla silindi!");
-            return ResponseEntity.ok(response);
-            
+            return ResponseEntity.ok(Map.of("message", "Besin başarıyla silindi!"));
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Besin silinirken bir hata oluştu: " + e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Map.of("message", "Besin silinirken hata oluştu: " + e.getMessage()));
         }
     }
 }
