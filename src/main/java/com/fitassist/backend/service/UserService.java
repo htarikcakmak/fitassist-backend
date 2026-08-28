@@ -40,15 +40,41 @@ public class UserService {
             throw new RuntimeException("Bu profili güncelleme yetkiniz yok!");
         }
 
-        // Null hatalarını önlemek için kontrollerle atama yapıyoruz
-        user.setHeight(updatedData.getHeight() != null ? updatedData.getHeight() : 0);
-        user.setWeight(updatedData.getWeight() != null ? updatedData.getWeight() : 0);
-        user.setAge(updatedData.getAge() != null ? updatedData.getAge() : 0);
-        user.setGoal(updatedData.getGoal());
-        user.setImageUrl(updatedData.getImageUrl());
-        user.setLanguage(updatedData.getLanguage());
-        user.setThemeBg(updatedData.getThemeBg());
-        user.setThemePrimary(updatedData.getThemePrimary());
+        // AKILLI (KISMİ) GÜNCELLEME ALANI:
+        // React'ten hangi veri gönderildiyse (null değilse) sadece o veriyi günceller.
+        // Gönderilmeyen verileri atlar ve veritabanındaki mevcut değerli bilgileri (boy, kilo vb.) korur.
+        
+        if (updatedData.getHeight() != null) {
+            user.setHeight(updatedData.getHeight());
+        }
+        
+        if (updatedData.getWeight() != null) {
+            user.setWeight(updatedData.getWeight());
+        }
+        
+        if (updatedData.getAge() != null) {
+            user.setAge(updatedData.getAge());
+        }
+        
+        if (updatedData.getGoal() != null) {
+            user.setGoal(updatedData.getGoal());
+        }
+        
+        if (updatedData.getImageUrl() != null) {
+            user.setImageUrl(updatedData.getImageUrl());
+        }
+        
+        if (updatedData.getLanguage() != null) {
+            user.setLanguage(updatedData.getLanguage());
+        }
+        
+        if (updatedData.getThemeBg() != null) {
+            user.setThemeBg(updatedData.getThemeBg());
+        }
+        
+        if (updatedData.getThemePrimary() != null) {
+            user.setThemePrimary(updatedData.getThemePrimary());
+        }
 
         return userRepository.save(user);
     }
