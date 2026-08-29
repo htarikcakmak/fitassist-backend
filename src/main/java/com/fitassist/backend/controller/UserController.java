@@ -114,15 +114,21 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginData) {
-        try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
-            );
-        } catch (Exception e) {
+        // Kullanıcıyı veritabanından bul
+        Optional<User> userOptional = userRepository.findByEmail(loginData.getEmail());
+        if (!userOptional.isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("message", "E-posta veya şifre hatalı!"));
         }
 
-        User user = userRepository.findByEmail(loginData.getEmail()).get();
+        User user = userOptional.get();
+
+        // Şifreyi doğrudan BCrypt ile kontrol et (AuthenticationManager sorun çıkarıyordu)
+        if (!passwordEncoder.matches(loginData.getPassword(), user.getPassword())) {
+            System.out.println("LOGIN HATASI: Şifre eşleşmedi. Email: " + loginData.getEmail());
+            System.out.println("DEBUG: DB'deki hash: " + user.getPassword().substring(0, 20) + "...");
+            return ResponseEntity.badRequest().body(Map.of("message", "E-posta veya şifre hatalı!"));
+        }
+
         String jwtToken = jwtUtil.generateToken(user.getEmail());
 
         Map<String, Object> response = buildAuthResponse(user, jwtToken);
