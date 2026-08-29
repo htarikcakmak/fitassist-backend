@@ -12,5 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     language VARCHAR(255),
     theme_bg VARCHAR(255),
     theme_primary VARCHAR(255),
-    image_url VARCHAR(255)
+    image_url TEXT
 );
+
+-- Mevcut veritabanında image_url sütunu VARCHAR(255) ise TEXT'e çevir (Base64 resimler sığmıyordu)
+ALTER TABLE users ALTER COLUMN image_url TYPE TEXT;
