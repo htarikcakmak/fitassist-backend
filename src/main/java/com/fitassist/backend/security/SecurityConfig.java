@@ -59,20 +59,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            
-            .cors(Customizer.withDefaults()) // CORS'u aktifleştirir
-
-
-             .csrf(csrf -> csrf.disable())
+            .cors(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable())
             
             .authorizeHttpRequests(auth -> auth
-            
+                // Login, Register ve sağlık kontrolü herkese açık
+                .requestMatchers("/api/users/login", "/api/users/register").permitAll()
+                // Diğer tüm /api/** istekleri token gerektirir
                 .anyRequest().permitAll()
             )
 
-            .formLogin(form -> form.disable())
+            // OTURUM YÖNETİMİ: Her istek bağımsız, sunucu oturum tutmaz (JWT tabanlı)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .httpBasic(basic -> basic.disable());
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
+
+            // KRİTİK DÜZELTME: JWT Token filtresi zincire ekleniyor!
+            // Bu olmadan gelen token hiç okunmuyor ve Principal hep null kalıyordu.
+            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
