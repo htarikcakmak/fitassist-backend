@@ -15,8 +15,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Şifreleme için kullanılacak gizli anahtar (Sadece sunucu bilir ve bellekte üretilir)
-    private static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // Şifreleme için kullanılacak gizli anahtar (Sabitlendi, sunucu uyuyup uyanınca tokenlar bozulmaz)
+    private static final Key SECRET_KEY = Keys.hmacShaKeyFor("FitAssistSecretKeyForJwtAuthenticationVerySecure123!".getBytes());
     
     // Token geçerlilik süresi (Şu an 24 saat olarak ayarlandı: 1000ms * 60sn * 60dk * 24sa)
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
