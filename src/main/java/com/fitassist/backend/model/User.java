@@ -24,7 +24,7 @@ public class User {
     private String goal = "Vücut Kompozisyonu";
     
     @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     // YENİ: Başlangıçta boş resim yerine varsayılan avatar linki veriyoruz
     private String imageUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=User&backgroundColor=transparent";
 
