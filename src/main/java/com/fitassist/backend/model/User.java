@@ -23,7 +23,6 @@ public class User {
     private Integer age = 0;
     private String goal = "Vücut Kompozisyonu";
     
-    @Lob
     @Column(columnDefinition = "TEXT")
     // YENİ: Başlangıçta boş resim yerine varsayılan avatar linki veriyoruz
     private String imageUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=User&backgroundColor=transparent";
