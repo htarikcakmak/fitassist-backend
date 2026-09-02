@@ -22,6 +22,7 @@ public class User {
     private Integer weight = 0;
     private Integer age = 0;
     private String goal = "Vücut Kompozisyonu";
+    private String gender = "male";
     
     @Column(columnDefinition = "TEXT")
     // YENİ: Başlangıçta boş resim yerine varsayılan avatar linki veriyoruz
@@ -58,6 +59,9 @@ public class User {
 
     public String getGoal() { return goal; }
     public void setGoal(String goal) { this.goal = goal; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
