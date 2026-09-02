@@ -17,3 +17,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Mevcut veritabanında image_url sütunu VARCHAR(255) ise TEXT'e çevir (Base64 resimler sığmıyordu)
 ALTER TABLE users ALTER COLUMN image_url TYPE TEXT;
+
+-- Cinsiyet sütunu eksikse ekle
+ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(50) DEFAULT 'male';
