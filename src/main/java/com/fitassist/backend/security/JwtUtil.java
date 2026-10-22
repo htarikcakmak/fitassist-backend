@@ -18,8 +18,8 @@ public class JwtUtil {
     // Şifreleme için kullanılacak gizli anahtar (Sabitlendi, sunucu uyuyup uyanınca tokenlar bozulmaz)
     private static final Key SECRET_KEY = Keys.hmacShaKeyFor("FitAssistSecretKeyForJwtAuthenticationVerySecure123!".getBytes());
     
-    // Token geçerlilik süresi (Şu an 24 saat olarak ayarlandı: 1000ms * 60sn * 60dk * 24sa)
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
+    // Token geçerlilik süresi (10 yıl: pratikte sınırsız)
+    private static final long EXPIRATION_TIME = 1000L * 60 * 60 * 24 * 365 * 10;
 
     // 1. Kullanıcı e-postasına (username) göre yeni bir Token üretir
     public String generateToken(String username) {
