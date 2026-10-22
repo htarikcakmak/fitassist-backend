@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Güvenlik Kalkanı: Şifreleri ve gizli anahtarları içeren dosyalar
+.env
+.env.*
+!.env.example
+application-secret.properties
+application-prod.properties
+application-dev.properties
+*.pem
+*.key
+*.cert
+credentials.json
+client_secret.json
